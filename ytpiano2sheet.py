@@ -243,6 +243,23 @@ def junk_boxes(bright, ww, fps):
     return boxes
 
 
+def fit_keys(roll, keys):
+    """Keys with their centres moved onto the bars, for videos that draw the bars to a slightly different scale than the keyboard picture under them (La Campanella by Kassia: 1.8% narrower, so bars high and low on the keyboard land between two keys). The scale is the bars' own octave, where their positions repeat; then a shift within a quarter white key. Nothing changes below a quarter key of drift at the keyboard ends: in 19 other test videos the bars' octave matched the keys' to 0.7%."""
+    centers = np.array([x for _, x, _ in keys]); white = ~np.array([b for _, _, b in keys]); ww = np.median(np.diff(centers[white]))
+    c = [(s + e) / 2 for r in roll > max(otsu(roll[roll > 15]), 40) for s, e in runs(r) if 0.4 * ww < e - s < 1.3 * ww]  # one bar wide
+    h = np.convolve(np.bincount(np.round(c).astype(int), minlength=roll.shape[1] + 1).astype(float), np.ones(3) / 3, 'same')
+    L = np.arange(int(0.95 * 7 * ww), int(1.05 * 7 * ww) + 1)
+    ac = np.array([(h[:-l] * h[l:]).sum() for l in L]); k = int(np.argmax(ac))
+    if not 0 < k < len(L) - 1: return keys
+    d = ac[k - 1] - 2 * ac[k] + ac[k + 1]
+    a = (L[k] + ((ac[k - 1] - ac[k + 1]) / (2 * d) if d else 0)) / (7 * ww)
+    if abs(a - 1) * white.sum() / 2 < 0.25: return keys
+    mid = centers.mean(); g = np.sqrt(h)
+    b = max(np.arange(-0.25 * ww, 0.25 * ww, 0.5), key=lambda b: g[np.clip(np.round(mid + a * (centers - mid) + b).astype(int), 0, len(g) - 1)].sum())
+    log(f'key centres fitted to the bars: scale {a:.3f}, shift {b:+.1f} px')
+    return [(p, mid + a * (x - mid) + b, bl) for p, x, bl in keys]
+
+
 def bars_to_notes(roll, keys, fps, th=None):
     """Notes (start frame, end frame, midi) from the roll. Each row's bright runs go to the key whose centre is nearest; a run too wide for one bar is split over the set of keys whose bars fit it best."""
     centers = np.array([x for _, x, _ in keys]); black = np.array([b for _, _, b in keys])
@@ -299,7 +316,8 @@ def bars_to_notes(roll, keys, fps, th=None):
                     a < x1 and x0 < b and keys_for(a, b) != list(ks) for a, b in rows[T])]
                 whole = all(len(owner[T, i][2]) == 1 and abs(sum(owner[T, i][:2]) / 2 - centers[i]) < 0.25 * ww
                             and 0.7 < (owner[T, i][1] - owner[T, i][0]) / width[black[i]] < 1.3 for T in range(s, e))
-                if (touch and not whole) or e - s < 2: continue
+                # one frame: only a clean full-brightness bar, and only while a frame is long enough to be a note (staccato at 30 fps; a 60 fps frame is a glitch)
+                if (touch and not whole) or (e - s < 2 and (touch or not whole or fps > 32 or roll[s, x0:x1].max() < 1.3 * th)): continue
             single = [owner[T, i][1] - owner[T, i][0] for T in range(s, e) if len(owner[T, i][2]) == 1]
             if len(single) > (e - s) / 2 and np.median(single) < 0.6 * width[black[i]]: continue  # thinner than any bar: text, sparks
             if not single:
@@ -500,6 +518,7 @@ def main():
     roll, t0 = read_roll(cap, ys, bg, v, top)
     cut = max(0, int(a.start * fps) - t0); roll, t0 = roll[cut:], t0 + cut
     if a.end: roll = roll[:max(1, int(a.end * fps) - t0)]
+    keys = fit_keys(roll, keys)
     frames = bars_to_notes(roll, keys, fps, a.threshold)
     if not frames: sys.exit('found the keyboard but no bars reaching it: no notes to write')
     notes = [((s + t0) / fps, (e + t0) / fps, p) for s, e, p in frames]

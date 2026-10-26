@@ -88,7 +88,7 @@ No. It reads the bars, not the sound. For a recording without bars you need an a
 2. Takes the median of 60 frames spread over the video: everything that moves (bars, hands, particles) disappears and the bare keyboard is left. Black keys are found high on the keys, the white-key grid from the lines between white keys, and the note names from the groups of two and three black keys.
 3. Measures how fast the bars fall (or rise) by timing the same pattern from one row of pixels to the next.
 4. Builds a piano roll: every row above the keyboard sees each bar at a different moment; shifted back by the travel time, all rows agree on the bars and disagree on everything else (sparks, particles, glow, logos), so their median keeps just the bars. Frames where much of the screen lights up at once (title cards, fades, end screens) are left out, and pop-ups wider than any chord of bars are cut from the roll.
-5. Each bright run in the roll goes to the key whose centre is nearest; runs too wide for one bar are split over the keys whose bars fit them best.
+5. Each bright run in the roll goes to the key whose centre is nearest; runs too wide for one bar are split over the keys whose bars fit them best. The key centres are first fitted to where the bars actually fall (a scale and a shift), since some videos draw the bars to a slightly different scale than the keyboard picture under them.
 6. Writes the formats you asked for. The sheet music is built with music21 (beats from the note onsets, bar lines from where the bass is lowest, hands split at middle C) and engraved by MuseScore.
 
 Nothing is tuned to a particular video: keyboard position and size, bar speed and direction, brightness threshold and bar widths are all measured.
