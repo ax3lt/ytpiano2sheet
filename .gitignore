@@ -1,0 +1,17 @@
+# Transcriptions and downloads: personal use only, never commit them
+out/
+*.mid
+*.musicxml
+*.mscz
+*.pdf
+*.wav
+*.m4a
+*.mp4
+*.webm
+# Local verification suite: goldens are transcriptions of copyrighted arrangements, scripts use machine-specific paths
+dev/
+# Python and OS clutter
+__pycache__/
+*.pyc
+.venv/
+.DS_Store

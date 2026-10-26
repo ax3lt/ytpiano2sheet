@@ -1,0 +1,10 @@
+{
+  "name": "ytpiano2sheet",
+  "displayName": "ytpiano2sheet",
+  "description": "Transcribe falling-notes (Synthesia-style) piano tutorial videos from YouTube or a file into MIDI, PDF sheet music, MusicXML, MuseScore and audio, optionally folded onto a smaller keyboard. For personal practice.",
+  "author": { "name": "ax3lt" },
+  "homepage": "https://github.com/ax3lt/ytpiano2sheet",
+  "repository": "https://github.com/ax3lt/ytpiano2sheet",
+  "license": "MIT",
+  "keywords": ["piano", "synthesia", "midi", "sheet-music", "musicxml", "musescore", "youtube", "transcription"]
+}

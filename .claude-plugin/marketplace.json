@@ -1,0 +1,12 @@
+{
+  "name": "ytpiano2sheet",
+  "description": "Piano tutorial video to MIDI and sheet music",
+  "owner": { "name": "ax3lt" },
+  "plugins": [
+    {
+      "name": "ytpiano2sheet",
+      "source": "./",
+      "description": "Falling-notes piano tutorial video to MIDI, PDF sheet music and audio"
+    }
+  ]
+}
